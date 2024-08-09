@@ -3,27 +3,26 @@ import jax
 import jax.numpy as jnp
 
 # Create a toy hydrogen production cost model
-@jax.jit
 def hydrogen_supply_cost(
-        h2_demand__kg_per_hour: np.ndarray,
-        electricity_price__usd_per_kwh : np.ndarray,
+        h2_demand__kg_per_hour: jnp.ndarray,
+        electricity_price__usd_per_kwh : jnp.ndarray,
         electrolyzer_size__mw: float,
-        electrolyzer_capacity_factor__fraction: np.ndarray
+        electrolyzer_capacity_factor__fraction: jnp.ndarray
     ):
 
     # Define parameters for the electrolyzer
-    electrolyzer_capital_cost__usd_per_kw = 1500
+    electrolyzer_capital_cost__usd_per_kw = 1500.
     electrolyzer_efficiency__fraction = 0.6
-    electrolyzer_lifetime__years = 20
+    electrolyzer_lifetime__years = 20.
     hydrogen_higher_heating_value__kwh_per_kg = 39.39
     h2_deficit_penalty_factor = 10 # This is a penalty on unfulfilled demand
 
     # Define storage parameters
-    h2_storage_capacity__kg = 1000
+    h2_storage_capacity__kg = 1000.
     h2_storage_level_start__fraction = 0.5
 
     # Convert from MW to kW
-    electrolyzer_size__kw = electrolyzer_size__mw * 1000
+    electrolyzer_size__kw = electrolyzer_size__mw * 1000.
 
     # Calculate the total capital cost of the electrolyzer
     total_electrolyzer_capital_cost__usd = electrolyzer_size__kw * electrolyzer_capital_cost__usd_per_kw
@@ -143,7 +142,6 @@ def hydrogen_supply_cost(
 
 
 # Helper function to calculate the cumulative sum of an array with a lower and upper bound
-@jax.jit
 def bounded_cumsum(x, lower_bound, upper_bound):
     def body(carry, xi):
         sum_so_far = carry
