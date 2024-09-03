@@ -1,4 +1,3 @@
-name: os-coding-sample
 channels:
   - conda-forge
   - defaults
@@ -220,4 +219,3 @@ dependencies:
       - opt-einsum==3.3.0
       - optax==0.2.3
       - toolz==0.12.1
-prefix: /home/tax/miniconda3/envs/os-coding-sample
