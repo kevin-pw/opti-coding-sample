@@ -7,7 +7,8 @@ def hydrogen_supply_cost(
         h2_demand__kg_per_hour: jnp.ndarray,
         electricity_price__usd_per_kwh : jnp.ndarray,
         electrolyzer_size__mw: float,
-        electrolyzer_capacity_factor__fraction: jnp.ndarray
+        electrolyzer_capacity_factor__fraction: jnp.ndarray,
+        h2_storage_capacity__t: float
     ):
 
     # Define parameters for the electrolyzer
@@ -18,7 +19,8 @@ def hydrogen_supply_cost(
     h2_deficit_penalty_factor = 10 # This is a penalty on unfulfilled demand
 
     # Define storage parameters
-    h2_storage_capacity__kg = 1000.
+    h2_storage_capacity__kg = h2_storage_capacity__t * 1000.
+    h2_storage_capital_cost__usd_per_kg = 600.
     h2_storage_level_start__fraction = 0.5
 
     # Convert from MW to kW
@@ -43,6 +45,10 @@ def hydrogen_supply_cost(
     ##########################
     # Storage
     ##########################
+
+    # Calculate the capital cost of storage based on its capacity in tons.
+    total_h2_storage_capital_cost__usd = h2_storage_capacity__kg * h2_storage_capital_cost__usd_per_kg
+
     # Determine the upper and lower storage limits based on the storage capacity and the starting storage level.
     # We want the starting storage level to always be zero (because we are working with cumulative sums)
     # so we set the lower bound storage level to be negative instead of zero.
@@ -58,8 +64,11 @@ def hydrogen_supply_cost(
         h2_production__kg_per_hour - h2_demand__kg_per_hour
     )
     
+    # Shift the demand supply balance by one time step to enable calculating the storage level after a charging or discharging event.
+    h2_demand_supply_balance_shifted__kg_per_hour = jnp.roll(h2_demand_supply_balance__kg_per_hour, shift=1)
+
     h2_relative_storage_level__kg = bounded_cumsum(
-        h2_demand_supply_balance__kg_per_hour,
+        h2_demand_supply_balance_shifted__kg_per_hour,
         lower_bound = h2_storage_lower_bound,
         upper_bound = h2_storage_upper_bound
     )
@@ -72,8 +81,8 @@ def hydrogen_supply_cost(
 
     # Charge is a negative value, discharge is positive value
     h2_storage_charge_and_discharge__kg_per_hour = (
-        h2_absolute_storage_level__kg
-        - jnp.roll(h2_absolute_storage_level__kg, shift = 1)
+        jnp.roll(h2_absolute_storage_level__kg, shift = -1)
+        - h2_absolute_storage_level__kg
     )
 
     # h2 supply cannot exceed the demand
@@ -119,6 +128,7 @@ def hydrogen_supply_cost(
     total_costs__usd = (
         total_electrolyzer_capital_cost__usd
         + annual_h2_production_electricity_cost__usd_per_year * electrolyzer_lifetime__years
+        + total_h2_storage_capital_cost__usd
     )
 
     # Calculate the total hydrogen supply mass over the lifetime of the electrolyzer
