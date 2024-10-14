@@ -46,7 +46,7 @@ def hydrogen_supply_cost(
     # Storage
     ##########################
 
-    # Calculate the capital cost of storage based on its capacity in tons.
+    # Calculate the capital cost of storage based on its capacity
     total_h2_storage_capital_cost__usd = h2_storage_capacity__kg * h2_storage_capital_cost__usd_per_kg
 
     # Determine the upper and lower storage limits based on the storage capacity and the starting storage level.
