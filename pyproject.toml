@@ -1,0 +1,12 @@
+# pyproject.toml
+
+[tool.black]
+line-length = 80  # Matches GitHub's default line length
+skip-string-normalization = true # Prevents normalization of string quotes
+target-version = ["py312"]  # Specifies Python 3.12 for compatibility
+
+
+[tool.nbqa]
+line-length = 80  # Matches GitHub's default line length
+addopts = ["--ignore", "W391"]  # ignore warnings about blank lines at the end of the file
+process_cells = ["code"]  # Limits nbqa to process only code cells in notebooks
